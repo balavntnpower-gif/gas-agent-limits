@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KARTIKEY BHARAT GAS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+        }
+        .login-container, .app {
+            max-width: 450px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .login-card {
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .login-card h2 {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            outline: none;
+            background: #f8fafc;
+        }
+        .login-card button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+        .loading-msg, .limit-error {
+            color: #dc2626;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            display: none;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        .error-msg {
+            color: #dc2626;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            display: none;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .header h1 {
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .new-order-header-btn {
+            background: white;
+            color: #f5576c;
+            border: none;
+            border-radius: 40px;
+            padding: 5px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.65rem;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 40px;
+        }
+        .logout-btn {
+            background: rgba(0,0,0,0.3);
+            padding: 4px 10px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .date-filter-row {
+            display: flex;
+            gap: 5px;
+            margin: 5px 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .date-filter-row select, .date-filter-row button {
+            padding: 5px 8px;
+            border-radius: 25px;
+            font-size: 0.7rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin: 5px 8px;
+            flex-shrink: 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 3px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-card.warning { background: linear-gradient(135deg, #f59e0b, #dc2626); }
+        .search-container {
+            margin: 4px 8px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .search-box {
+            display: flex;
+            gap: 5px;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 35px;
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 5px;
+            font-size: 0.7rem;
+            outline: none;
+        }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 120px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .admin-panel {
+            background: #f1f5f9;
+            margin: 4px 8px;
+            padding: 5px;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+        .agent-list {
+            font-size: 0.55rem;
+            margin-top: 5px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .orders-list {
+            margin: 3px 8px 5px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .order-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .order-item.old-customer {
+            border: 2px solid #dc2626;
+            background: #fef2f2;
+        }
+        .old-badge {
+            background: #dc2626;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        .order-details {
+            font-size: 0.7rem;
+            color: #1f2937;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+        .consumer-mob {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #1e3a8a;
+        }
+        .status {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #dbeafe; color: #1e40af; }
+        .status-delivered { background: #d1fae5; color: #065f46; }
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 4px 10px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+        }
+        .processing-btn { background: #10b981; color: white; }
+        .deliver-btn { background: #3b82f6; color: white; }
+        .delete-btn { background: #ef4444; color: white; }
+        .call-btn { background: #22c55e; color: white; }
+        .nav {
+            display: flex;
+            gap: 3px;
+            padding: 6px 8px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: #f1f5f9;
+            color: #334155;
+            flex: 1;
+            padding: 5px 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .file-input { display: none; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-container">
+    <div class="login-card">
+        <h2>🚚 KARTIKEY BHARAT GAS</h2>
+        <p style="margin-bottom: 15px;">लॉगिन करें</p>
+        <input type="text" id="loginUsername" placeholder="यूजरनेम" autocomplete="off" inputmode="text">
+        <input type="password" id="loginPassword" placeholder="पासवर्ड" inputmode="text">
+        <div id="loadingMsg" class="loading-msg">⏳ डेटाबेस लोड हो रहा है...</div>
+        <div id="limitErrorMsg" class="limit-error"></div>
+        <button id="doLoginBtn" style="display:none;">लॉगिन करें</button>
+        <button id="restoreBtnLogin" class="restore-btn-login" style="display:none;">🔄 रिस्टोर</button>
+        <div id="loginError" class="error-msg">गलत यूजरनेम या पासवर्ड</div>
+    </div>
+    <input type="file" id="restoreFileInputLogin" accept=".json" style="display:none">
+</div>
+
+<div id="mainApp" class="app" style="display: none;">
+    <div class="header">
+        <h1>🚚 KARTIKEY BHARAT GAS</h1>
+        <button class="new-order-header-btn" id="newOrderHeaderBtn">➕ नया ऑर्डर</button>
+        <div class="user-info">
+            <span id="userRoleBadge"></span>
+            <span class="logout-btn" id="logoutBtn">लॉगआउट</span>
+        </div>
+    </div>
+    <div class="date-filter-row">
+        <select id="dateFilterSelect">
+            <option value="all">📅 सारे ऑर्डर</option>
+            <option value="today">✅ आज</option>
+            <option value="yesterday">⬅️ कल</option>
+            <option value="week">📆 इस सप्ताह</option>
+            <option value="month">📅 इस महीने</option>
+        </select>
+        <button id="applyDateFilterBtn">लागू करें</button>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><small>📦 डिलीवर</small><h3 id="totalDelivered">0</h3></div>
+        <div class="stat-card"><small>👥 कंज्यूमर</small><h3 id="totalConsumers">0</h3></div>
+        <div class="stat-card"><small>🔑 DSC</small><h3 id="totalDscCodes">0</h3></div>
+        <div class="stat-card warning"><small>⚠️ 30+ कस्टमर</small><h3 id="totalOldCustomers">0</h3></div>
+        <div class="stat-card"><small>📊 कुल</small><h3 id="totalOrders">0</h3></div>
+    </div>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 नाम / मोबाइल / कंज्यूमर नंबर..." inputmode="text">
+            <button id="searchBtn">खोजें</button>
+            <button id="clearSearchBtn">साफ करें</button>
+        </div>
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <h4>👑 एडमिन पैनल</h4>
+        <div id="agentListDisplay" class="agent-list">📋 एजेंट लिस्ट लोड हो रही...</div>
+        <button id="refreshAgentsBtn" class="small-btn" style="margin-top:5px;">🔄 रिफ्रेश एजेंट लिस्ट</button>
+    </div>
+    <div class="orders-list">
+        <h3>📋 ऑर्डर लिस्ट <span style="color:#dc2626;">(लाल = 30+ दिन)</span></h3>
+        <div id="ordersContainer"></div>
+    </div>
+    <div class="nav">
+        <button class="nav-btn active" data-filter="all">सभी</button>
+        <button class="nav-btn" data-filter="pending">⏳ पेंडिंग</button>
+        <button class="nav-btn" data-filter="processing">🚚 प्रोसेसिंग</button>
+        <button class="nav-btn" data-filter="delivered">✅ डिलीवर</button>
+        <button class="nav-btn" data-filter="old30">⚠️ 30+ कस्टमर</button>
+    </div>
+</div>
+
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <h3>🛒 नया ऑर्डर</h3>
+        <div class="form-group"><label>कंज्यूमर नंबर</label><input id="modalConsumerNo" placeholder="1234567890" inputmode="numeric"></div>
+        <div class="form-group"><label>मोबाइल</label><input id="modalMobile" placeholder="9876543210" inputmode="tel"></div>
+        <div class="form-group"><label>ग्राहक नाम</label><input id="modalCustomerName" placeholder="राम कुमार" inputmode="text"></div>
+        <div class="form-group"><label>सिलेंडर</label><select id="modalCylinderType"><option value="14.2kg">14.2 kg (₹985)</option><option value="19kg">19 kg (₹3050)</option></select></div>
+        <div class="form-group"><label>पता</label><input id="modalAddress" placeholder="मेन रोड, दिल्ली" inputmode="text"></div>
+        <div class="form-group"><label>रिमार्क</label><textarea id="modalRemark" placeholder="नोट्स..."></textarea></div>
+        <div class="modal-buttons"><button class="submit-order-btn" id="modalSubmitBtn">✅ ऑर्डर करें</button><button class="cancel-modal-btn" id="modalCancelBtn">❌ रद्द करें</button></div>
+    </div>
+</div>
+
+<script>
+    // 🔥 ========== यहाँ अपनी GitHub JSON फाइल का RAW URL डालें ==========
+    const JSON_URL = "https://raw.githubusercontent.com/balavntnpower-gif/gas-agent-limits/refs/heads/main/agents_limit.json";
+    // 🔥 =================================================================
+
+    let db;
+    let currentUser = null;
+    let currentFilter = 'all';
+    let currentSearchTerm = '';
+    let allOrders = [];
+    let currentDateFilter = 'all';
+    let dbReady = false;
+    let agentLimits = {}; // { "Ramesh": { limitDays, startDate } }
+
+    const cylinderPrices = { '14.2kg': 985, '19kg': 3050 };
+    const ADMIN_USER = { username: 'Hindu', password: 'Lion', role: 'admin' };
+    const DEFAULT_AGENTS = [
+        { username: 'Ramesh', password: 'ram123', role: 'agent' },
+        { username: 'Suresh', password: 'sur123', role: 'agent' }
+    ];
+
+    // GitHub से लिमिट फेच करना
+    async function fetchAgentLimits() {
+        try {
+            const response = await fetch(JSON_URL);
+            if (!response.ok) throw new Error("Network error");
+            const data = await response.json();
+            if (data.agents) {
+                agentLimits = data.agents;
+                console.log("✅ लिमिट डेटा लोड हुआ:", agentLimits);
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.warn("⚠️ लिमिट फेच नहीं हुआ, ऑफलाइन मोड में?", err);
+            return false;
+        }
+    }
+
+    // एजेंट की लिमिट चेक करना
+    function isAgentLimitExpired(username) {
+        if (username === ADMIN_USER.username) return false; // एडमिन पर कोई लिमिट नहीं
+        
+        const limitData = agentLimits[username];
+        if (!limitData) return false; // अगर लिमिट डेटा नहीं, तो मान लो अनलिमिटेड
+        
+        const { limitDays, startDate } = limitData;
+        if (!limitDays || !startDate) return false;
+        
+        const start = new Date(startDate);
+        const today = new Date();
+        const diffDays = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
+        
+        return diffDays >= limitDays;
+    }
+
+    function getRemainingDays(username) {
+        if (username === ADMIN_USER.username) return Infinity;
+        const limitData = agentLimits[username];
+        if (!limitData || !limitData.limitDays || !limitData.startDate) return Infinity;
+        const start = new Date(limitData.startDate);
+        const today = new Date();
+        const used = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
+        return Math.max(0, limitData.limitDays - used);
+    }
+
+    // डेटाबेस इनिशियलाइज़
+    function initDB() {
+        const req = indexedDB.open('GasDeliveryDB', 25);
+        req.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains('orders')) {
+                const orderStore = db.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
+                orderStore.createIndex('status', 'status');
+                orderStore.createIndex('customerName', 'customerName');
+                orderStore.createIndex('mobile', 'mobile');
+                orderStore.createIndex('date', 'date');
+            }
+            if (!db.objectStoreNames.contains('customers')) db.createObjectStore('customers', { keyPath: 'mobile' });
+            if (!db.objectStoreNames.contains('dscCodes')) db.createObjectStore('dscCodes', { keyPath: 'dscCode' });
+            if (!db.objectStoreNames.contains('agents')) {
+                const agentStore = db.createObjectStore('agents', { keyPath: 'username' });
+                DEFAULT_AGENTS.forEach(agent => agentStore.put(agent));
+            }
+        };
+        req.onsuccess = (e) => {
+            db = e.target.result;
+            dbReady = true;
+            document.getElementById('loadingMsg').style.display = 'none';
+            document.getElementById('doLoginBtn').style.display = 'block';
+            document.getElementById('restoreBtnLogin').style.display = 'block';
+            checkSession();
+        };
+        req.onerror = () => { document.getElementById('loadingMsg').innerHTML = '❌ डेटाबेस एरर'; };
+    }
+    initDB();
+
+    // लॉगिन से पहले लिमिट चेक
+    async function checkAndLogin(username, password) {
+        // पहले एजेंट लिमिट्स फेच करो
+        await fetchAgentLimits();
+        
+        // एडमिन चेक
+        if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
+            currentUser = { username: ADMIN_USER.username, role: 'admin' };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showApp();
+            return true;
+        }
+        
+        // एजेंट लिमिट चेक
+        if (isAgentLimitExpired(username)) {
+            const remaining = getRemainingDays(username);
+            const errorDiv = document.getElementById('limitErrorMsg');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `❌ आपकी ${limitDays} दिन की लिमिट समाप्त हो चुकी है।<br>कृपया एडमिन (Hindu) से संपर्क करें।`;
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+            return false;
+        }
+        
+        // एजेंट पासवर्ड चेक
+        const tx = db.transaction(['agents'], 'readonly');
+        const request = tx.objectStore('agents').get(username);
+        return new Promise((resolve) => {
+            request.onsuccess = (e) => {
+                const agent = e.target.result;
+                if (agent && agent.password === password) {
+                    currentUser = { username: agent.username, role: 'agent' };
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showApp();
+                    resolve(true);
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                    setTimeout(() => document.getElementById('loginError').style.display = 'none', 2000);
+                    resolve(false);
+                }
+            };
+            request.onerror = () => resolve(false);
+        });
+    }
+
+    function getDateFromFilter() {
+        const today = new Date(); today.setHours(0,0,0,0);
+        if (currentDateFilter === 'today') return { start: today, end: new Date(today.getTime() + 86400000) };
+        if (currentDateFilter === 'yesterday') { const y = new Date(today); y.setDate(y.getDate() - 1); return { start: y, end: today }; }
+        if (currentDateFilter === 'week') { const ws = new Date(today); ws.setDate(today.getDate() - today.getDay()); return { start: ws, end: new Date(today.getTime() + 86400000) }; }
+        if (currentDateFilter === 'month') { const ms = new Date(today.getFullYear(), today.getMonth(), 1); return { start: ms, end: new Date(today.getTime() + 86400000) }; }
+        return null;
+    }
+
+    function filterOrdersByDate(orders) {
+        if (!currentDateFilter || currentDateFilter === 'all') return orders;
+        const range = getDateFromFilter();
+        if (!range) return orders;
+        return orders.filter(order => { const od = new Date(order.date); od.setHours(0,0,0,0); return od >= range.start && od < range.end; });
+    }
+
+    function isCustomerOld(customerName, mobile, ordersList = null) {
+        const ordersToCheck = ordersList || allOrders;
+        const customerOrders = ordersToCheck.filter(order => order.customerName === customerName || order.mobile === mobile);
+        if (customerOrders.length === 0) return false;
+        const latestOrder = customerOrders.reduce((latest, current) => new Date(current.date) > new Date(latest.date) ? current : latest);
+        const diffDays = Math.ceil((new Date() - new Date(latestOrder.date)) / (1000 * 60 * 60 * 24));
+        return diffDays >= 30;
+    }
+
+    function getUniqueOldCustomersCount(ordersList) {
+        const uniqueCustomers = new Map();
+        ordersList.forEach(order => {
+            const key = order.mobile;
+            if (!uniqueCustomers.has(key) || new Date(order.date) > new Date(uniqueCustomers.get(key).date)) {
+                uniqueCustomers.set(key, { name: order.customerName, mobile: order.mobile, date: order.date });
+            }
+        });
+        let oldCount = 0;
+        for (let customer of uniqueCustomers.values()) {
+            const diffDays = Math.ceil((new Date() - new Date(customer.date)) / (1000 * 60 * 60 * 24));
+            if (diffDays >= 30) oldCount++;
+        }
+        return oldCount;
+    }
+
+    function restoreDataFromJson(file, callback) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const backupData = JSON.parse(event.target.result);
+                if (!confirm('⚠️ पूरा डेटा रिस्टोर होगा। जारी रखें?')) return callback(false);
+                await Promise.all([
+                    new Promise(r => { const tx = db.transaction(['orders'],'readwrite'); tx.objectStore('orders').clear(); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['customers'],'readwrite'); tx.objectStore('customers').clear(); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['dscCodes'],'readwrite'); tx.objectStore('dscCodes').clear(); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['agents'],'readwrite'); tx.objectStore('agents').clear(); tx.oncomplete = r; })
+                ]);
+                await Promise.all([
+                    new Promise(r => { const tx = db.transaction(['orders'],'readwrite'); backupData.orders.forEach(o => tx.objectStore('orders').add(o)); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['customers'],'readwrite'); backupData.customers.forEach(c => tx.objectStore('customers').add(c)); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['dscCodes'],'readwrite'); backupData.dscCodes.forEach(d => tx.objectStore('dscCodes').add(d)); tx.oncomplete = r; }),
+                    new Promise(r => { const tx = db.transaction(['agents'],'readwrite'); backupData.agents.forEach(a => tx.objectStore('agents').add(a)); tx.oncomplete = r; })
+                ]);
+                alert('✅ डेटा रिस्टोर हो गया');
+                callback(true);
+            } catch (err) { alert('❌ गलत फाइल'); callback(false); }
+        };
+        reader.readAsText(file);
+    }
+
+    function clearAllData() {
+        if (currentUser?.role !== 'admin') return alert('❌ सिर्फ एडमिन');
+        if (confirm('⚠️ सारा डेटा डिलीट करें?')) {
+            ['orders','customers','dscCodes','agents'].forEach(store => { const tx = db.transaction([store],'readwrite'); tx.objectStore(store).clear(); });
+            setTimeout(() => {
+                const tx = db.transaction(['agents'],'readwrite');
+                DEFAULT_AGENTS.forEach(a => tx.objectStore('agents').put(a));
+                tx.oncomplete = () => { loadOrders(); updateStats(); if(currentUser?.role === 'admin') loadAgentList(); alert('✅ साफ हो गया'); };
+            }, 100);
+        }
+    }
+
+    async function loadAgentList() {
+        if (!db || currentUser?.role !== 'admin') return;
+        await fetchAgentLimits();
+        
+        const tx = db.transaction(['agents'], 'readonly');
+        tx.objectStore('agents').getAll().onsuccess = (e) => {
+            const agents = e.target.result;
+            let html = '<h4 style="margin:5px 0;">📋 एजेंट लिस्ट (लिमिट)</h4>';
+            agents.forEach(agent => {
+                const limitData = agentLimits[agent.username] || { limitDays: 'अनलिमिटेड', startDate: '-' };
+                const remaining = getRemainingDays(agent.username);
+                const status = isAgentLimitExpired(agent.username) ? '🔴 समाप्त' : `🟢 ${remaining} दिन बचे`;
+                html += `<div class="agent-item">
+                            <span><strong>${agent.username}</strong><br>
+                            <small>लिमिट: ${limitData.limitDays || '∞'} दिन | ${status}</small></span>
+                         </div>`;
+            });
+            document.getElementById('agentListDisplay').innerHTML = html;
+        };
+    }
+
+    document.getElementById('doLoginBtn').onclick = async () => {
+        if (!dbReady) return alert('डेटाबेस लोड हो रहा');
+        const uname = document.getElementById('loginUsername').value.trim();
+        const pwd = document.getElementById('loginPassword').value.trim();
+        await checkAndLogin(uname, pwd);
+    };
+
+    function showApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        const roleText = currentUser.role === 'admin' ? '👑 एडमिन' : `🚚 एजेंट (${getRemainingDays(currentUser.username) !== Infinity ? getRemainingDays(currentUser.username) + ' दिन बचे' : ''})`;
+        document.getElementById('userRoleBadge').innerText = roleText;
+        if (currentUser.role === 'admin') { 
+            document.getElementById('adminPanel').style.display = 'block'; 
+            loadAgentList(); 
+        } else {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+        loadOrders(); 
+        updateStats();
+    }
+
+    function checkSession() { 
+        if (dbReady && localStorage.getItem('currentUser')) { 
+            currentUser = JSON.parse(localStorage.getItem('currentUser')); 
+            showApp(); 
+        } 
+    }
+    
+    document.getElementById('logoutBtn').onclick = () => { 
+        currentUser = null; 
+        localStorage.clear(); 
+        document.getElementById('loginScreen').style.display = 'block'; 
+        document.getElementById('mainApp').style.display = 'none'; 
+    };
+    document.getElementById('refreshAgentsBtn')?.addEventListener('click', () => loadAgentList());
+
+    // Restore buttons
+    document.getElementById('restoreBtnLogin').onclick = () => document.getElementById('restoreFileInputLogin').click();
+    document.getElementById('restoreFileInputLogin').onchange = (e) => { if(e.target.files[0]) restoreDataFromJson(e.target.files[0], (s) => { if(s && currentUser) { loadOrders(); updateStats(); if(currentUser?.role === 'admin') loadAgentList(); } }); e.target.value = ''; };
+    document.getElementById('restoreBtn')?.addEventListener('click', () => document.getElementById('restoreFileInput').click());
+    document.getElementById('restoreFileInput')?.addEventListener('change', (e) => { if(e.target.files[0]) restoreDataFromJson(e.target.files[0], (s) => { if(s) { loadOrders(); updateStats(); if(currentUser?.role === 'admin') loadAgentList(); } }); e.target.value = ''; });
+
+    // Modal
+    const modal = document.getElementById('orderModal');
+    document.getElementById('newOrderHeaderBtn').onclick = () => modal.style.display = 'flex';
+    document.getElementById('modalCancelBtn').onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    document.getElementById('modalSubmitBtn').onclick = () => {
+        const cn = document.getElementById('modalConsumerNo').value.trim();
+        const name = document.getElementById('modalCustomerName').value.trim();
+        const mob = document.getElementById('modalMobile').value.trim();
+        const addr = document.getElementById('modalAddress').value.trim();
+        const cyl = document.getElementById('modalCylinderType').value;
+        const rem = document.getElementById('modalRemark').value;
+        if (!cn || !name || !mob || !addr) { alert('सभी जरूरी फील्ड भरें'); return; }
+        const newOrder = { consumerNo: cn, customerName: name, mobile: mob, address: addr, cylinderType: cyl, price: cylinderPrices[cyl], status: 'pending', remark: rem, dscCode: null, date: new Date().toISOString(), deliveredDate: null, deliveryRemark: null };
+        const tx = db.transaction(['orders'],'readwrite');
+        tx.objectStore('orders').add(newOrder).onsuccess = () => {
+            alert('✅ ऑर्डर जमा हुआ');
+            modal.style.display = 'none';
+            ['modalConsumerNo','modalCustomerName','modalMobile','modalAddress','modalRemark'].forEach(id => document.getElementById(id).value = '');
+            const ct = db.transaction(['customers'],'readwrite');
+            ct.objectStore('customers').put({ mobile: mob, name, consumerNo: cn, lastOrder: new Date().toISOString() });
+            loadOrders(); updateStats();
+        };
+    };
+
+    // Search, Filter, Display
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsDiv = document.getElementById('suggestions');
+    searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        if (term.length < 1) { suggestionsDiv.style.display = 'none'; return; }
+        const uniqueNames = [...new Set(allOrders.map(o => o.customerName).filter(n => n))];
+        const matches = uniqueNames.filter(name => name.toLowerCase().includes(term)).slice(0,5);
+        if (matches.length) {
+            suggestionsDiv.innerHTML = matches.map(name => `<div class="suggestion-item" data-name="${name}">🔍 ${name}</div>`).join('');
+            suggestionsDiv.style.display = 'block';
+            document.querySelectorAll('.suggestion-item').forEach(item => item.onclick = () => { searchInput.value = item.dataset.name; suggestionsDiv.style.display = 'none'; document.getElementById('searchBtn').click(); });
+        } else suggestionsDiv.style.display = 'none';
+    });
+    document.getElementById('searchBtn').onclick = () => { currentSearchTerm = searchInput.value.trim().toLowerCase(); suggestionsDiv.style.display = 'none'; displayFilteredOrders(); };
+    document.getElementById('clearSearchBtn').onclick = () => { searchInput.value = ''; currentSearchTerm = ''; suggestionsDiv.style.display = 'none'; displayFilteredOrders(); };
+    document.getElementById('applyDateFilterBtn').onclick = () => { currentDateFilter = document.getElementById('dateFilterSelect').value; displayFilteredOrders(); updateStats(); };
+
+    function displayFilteredOrders() {
+        let filtered = [...allOrders];
+        filtered = filterOrdersByDate(filtered);
+        if (currentSearchTerm) filtered = filtered.filter(o => o.customerName.toLowerCase().includes(currentSearchTerm) || o.mobile.includes(currentSearchTerm) || o.consumerNo.includes(currentSearchTerm));
+        if (currentFilter === 'pending') filtered = filtered.filter(o => o.status === 'pending');
+        else if (currentFilter === 'processing') filtered = filtered.filter(o => o.status === 'processing');
+        else if (currentFilter === 'delivered') filtered = filtered.filter(o => o.status === 'delivered');
+        else if (currentFilter === 'old30') {
+            const oldSet = new Set();
+            filtered.forEach(o => { if (isCustomerOld(o.customerName, o.mobile, filtered)) oldSet.add(o.mobile); });
+            filtered = filtered.filter(o => oldSet.has(o.mobile));
+        }
+        filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+        renderOrders(filtered);
+    }
+
+    function makeCall(mob) { if (mob && mob.trim()) window.location.href = `tel:${mob.trim()}`; else alert('❌ नंबर नहीं'); }
+    function moveToProcessing(id) { const dsc = prompt("🔑 DSC Code दें:"); if (!dsc) return; const tx = db.transaction(['orders'],'readwrite'); tx.objectStore('orders').get(id).onsuccess = (e) => { const o = e.target.result; if (!o.dscCode) { o.dscCode = dsc.toUpperCase(); db.transaction(['dscCodes'],'readwrite').objectStore('dscCodes').put({ dscCode: dsc.toUpperCase() }); } if (o.dscCode !== dsc.toUpperCase()) return alert('❌ DSC Code गलत'); o.status = 'processing'; tx.objectStore('orders').put(o); alert('✅ प्रोसेसिंग में भेज दिया'); loadOrders(); updateStats(); }; }
+    function moveToDelivered(id) { if (!confirm("⚠️ क्या आप सच में डिलीवर करना चाहते हैं?")) { alert("❌ डिलीवरी रद्द"); return; } const remark = prompt("📝 डिलीवरी रिमार्क (वैकल्पिक):", ""); if (remark === null) { alert("❌ डिलीवरी रद्द"); return; } const tx = db.transaction(['orders'],'readwrite'); tx.objectStore('orders').get(id).onsuccess = (e) => { const o = e.target.result; if (o.status !== 'processing') return alert('❌ केवल प्रोसेसिंग वाला डिलीवर होगा'); o.status = 'delivered'; o.deliveredDate = new Date().toISOString(); o.deliveryRemark = remark; tx.objectStore('orders').put(o); alert('✅ डिलीवर हो गया'); loadOrders(); updateStats(); }; }
+    function deleteOrder(id) { if (currentUser?.role !== 'admin') return alert('सिर्फ एडमिन'); if (confirm('हटाएं?')) { db.transaction(['orders'],'readwrite').objectStore('orders').delete(id).onsuccess = () => { loadOrders(); updateStats(); }; } }
+
+    function loadOrders() { if (!db) return; db.transaction(['orders'],'readonly').objectStore('orders').getAll().onsuccess = (e) => { allOrders = e.target.result || []; displayFilteredOrders(); updateStats(); }; }
+    function renderOrders(orders) {
+        const container = document.getElementById('ordersContainer');
+        if (!orders.length) { container.innerHTML = '<div class="empty-state">📭 कोई ऑर्डर नहीं</div>'; return; }
+        container.innerHTML = orders.map(order => {
+            const isOld = isCustomerOld(order.customerName, order.mobile, orders);
+            const dscDisplay = order.dscCode ? `🔑 DSC: ${escapeHtml(order.dscCode)}` : '🔑 DSC: ⏳ अभी नहीं डाला';
+            return `<div class="order-item ${isOld ? 'old-customer' : ''}">
+                <div class="order-header"><span><strong>👤 ${escapeHtml(order.customerName)}</strong> ${isOld ? '<span class="old-badge">⚠️ 30+ दिन</span>' : ''}</span><span class="status status-${order.status}">${order.status === 'pending' ? '⏳ पेंडिंग' : (order.status === 'processing' ? '🚚 प्रोसेसिंग' : '✅ डिलीवर')}</span></div>
+                <div class="order-details"><div><strong>🆔 कंज्यूमर:</strong> <span class="consumer-mob">${escapeHtml(order.consumerNo)}</span></div><div>${dscDisplay}</div><div><strong>📞 मोबाइल:</strong> <span class="consumer-mob">${escapeHtml(order.mobile)}</span></div><div><strong>📍 पता:</strong> ${escapeHtml(order.address)}</div><div><strong>🎯 सिलेंडर:</strong> ${order.cylinderType} - ₹${order.price}</div>${order.remark ? `<div><strong>📝 नोट:</strong> ${escapeHtml(order.remark)}</div>` : ''}${order.deliveryRemark ? `<div><strong>✅ रिमार्क:</strong> ${escapeHtml(order.deliveryRemark)}</div>` : ''}<div><strong>📅 तारीख:</strong> ${new Date(order.date).toLocaleString('hi-IN')}</div>${order.deliveredDate ? `<div><strong>📅 डिलीवरी:</strong> ${new Date(order.deliveredDate).toLocaleString('hi-IN')}</div>` : ''}</div>
+                <div class="action-btns">${order.status === 'pending' ? `<button class="action-btn processing-btn" data-id="${order.id}" data-action="processing">🚚 प्रोसेसिंग</button>` : ''}${order.status === 'processing' ? `<button class="action-btn deliver-btn" data-id="${order.id}" data-action="deliver">✅ डिलीवर</button>` : ''}<button class="action-btn call-btn" data-mobile="${order.mobile}" data-action="call">📞 Call</button>${currentUser?.role === 'admin' ? `<button class="action-btn delete-btn" data-id="${order.id}" data-action="delete">🗑️ डिलीट</button>` : ''}</div>
+            </div>`;
+        }).join('');
+        document.querySelectorAll('.action-btn').forEach(btn => btn.onclick = () => { const act = btn.dataset.action; if (act === 'processing') moveToProcessing(parseInt(btn.dataset.id)); else if (act === 'deliver') moveToDelivered(parseInt(btn.dataset.id)); else if (act === 'delete') deleteOrder(parseInt(btn.dataset.id)); else if (act === 'call') makeCall(btn.dataset.mobile); });
+    }
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+    function updateStats() {
+        if (!db) return;
+        let filtered = filterOrdersByDate([...allOrders]);
+        document.getElementById('totalDelivered').innerText = filtered.filter(o => o.status === 'delivered').length;
+        document.getElementById('totalOrders').innerText = filtered.length;
+        document.getElementById('totalConsumers').innerText = new Set(filtered.map(o => o.mobile)).size;
+        document.getElementById('totalDscCodes').innerText = new Set(filtered.filter(o => o.dscCode).map(o => o.dscCode)).size;
+        document.getElementById('totalOldCustomers').innerText = getUniqueOldCustomersCount(filtered);
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.onclick = () => { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentFilter = btn.dataset.filter; displayFilteredOrders(); });
+
+    document.getElementById('backupBtn')?.addEventListener('click', async () => {
+        const tx = db.transaction(['orders','customers','dscCodes','agents'],'readonly');
+        const orders = await new Promise(r => tx.objectStore('orders').getAll().onsuccess = e => r(e.target.result));
+        const customers = await new Promise(r => tx.objectStore('customers').getAll().onsuccess = e => r(e.target.result));
+        const dscCodes = await new Promise(r => tx.objectStore('dscCodes').getAll().onsuccess = e => r(e.target.result));
+        const agents = await new Promise(r => tx.objectStore('agents').getAll().onsuccess = e => r(e.target.result));
+        const blob = new Blob([JSON.stringify({ orders, customers, dscCodes, agents }, null, 2)], {type:'application/json'});
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `backup_${Date.now()}.json`; link.click(); alert('✅ बैकअप सेव');
+    });
+    document.getElementById('exportExcelBtn')?.addEventListener('click', () => {
+        db.transaction(['orders'],'readonly').objectStore('orders').getAll().onsuccess = (e) => {
+            const orders = e.target.result;
+            let html = `<html><head><meta charset="UTF-8"><title>Report</title><style>th,td{border:1px solid #000;padding:6px;}th{background:#4f46e5;color:white;}</style></head><body><h2>रिपोर्ट</h2><table border="1"><thead><tr><th>कंज्यूमर</th><th>DSC</th><th>नाम</th><th>मोबाइल</th><th>पता</th><th>सिलेंडर</th><th>कीमत</th><th>स्टेटस</th><th>रिमार्क</th><th>डिलीवरी तारीख</th><th>डिलीवरी रिमार्क</th><th>ऑर्डर तारीख</th><th>30+ दिन</th></tr></thead><tbody>`;
+            orders.forEach(o => { const isOld = isCustomerOld(o.customerName, o.mobile, orders); html += `<tr style="${isOld ? 'background:#fee2e2' : ''}"><td>${escapeHtml(o.consumerNo||'')}</td><td>${escapeHtml(o.dscCode||'')}</td><td>${escapeHtml(o.customerName||'')}</td><td>${escapeHtml(o.mobile||'')}</td><td>${escapeHtml(o.address||'')}</td><td>${o.cylinderType||''}</td><td>${o.price||''}</td><td>${o.status}</td><td>${escapeHtml(o.remark||'')}</td><td>${o.deliveredDate ? new Date(o.deliveredDate).toLocaleString() : '-'}</td><td>${escapeHtml(o.deliveryRemark||'')}</td><td>${new Date(o.date).toLocaleString()}</td><td>${isOld ? 'हाँ' : 'नहीं'}</td></tr>`; });
+            html += `</tbody></table></body></html>`;
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([html], {type:'application/vnd.ms-excel'})); link.download = `gas_report_${Date.now()}.xls`; link.click(); alert('✅ एक्सेल डाउनलोड');
+        };
+    });
+</script>
+</body>
+</html>
