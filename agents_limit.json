@@ -1,0 +1,6 @@
+{
+  "agents": {
+    "Ramesh": { "limitDays": 30, "startDate": "2026-04-06" },
+    "Suresh": { "limitDays": 30, "startDate": "2026-04-06" }
+  }
+}
